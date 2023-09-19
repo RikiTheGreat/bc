@@ -11,10 +11,10 @@ def crypto_hash(*args):
     """
 
     stringfied_args = map(stringfy, args)
-    print(f'stringfied_args: {stringfied_args}')
+   # print(f'stringfied_args: {stringfied_args}')
 
     joined_data = ''.join(stringfied_args)
-    print(f'joined_data: {joined_data}')
+    #print(f'joined_data: {joined_data}')
     return hashlib.sha256(joined_data.encode('utf-8')).hexdigest()
 
 
