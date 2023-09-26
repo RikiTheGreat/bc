@@ -1,14 +1,20 @@
 from backend.blockchain.blockchain import Blockchain
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from backend.pubsub import PubSub
 import os
 import random
 import requests
+from backend.wallet.transaction import Transaction
+from backend.wallet.wallet import Wallet
+from backend.wallet.transaction_pool import TransactionPool
 
 app = Flask(__name__)
 
 blockchain = Blockchain()
-pubsub = PubSub(blockchain)
+wallet = Wallet()
+transaction = Transaction(wallet, "recipient", 100)
+transaction_pool = TransactionPool()
+pubsub = PubSub(blockchain, transaction, transaction_pool)
 
 
 @app.route("/")
@@ -21,7 +27,7 @@ def route_blockchain():
     return jsonify(blockchain.to_json())
 
 
-@app.route("/mine")
+@app.route("/blockchain/mine")
 def route_mine():
     transaction_data = "test_web"
     blockchain.add_block(transaction_data)
@@ -29,6 +35,26 @@ def route_mine():
     block = blockchain.chain[-1]
     pubsub.broadcast_block(block)
     return jsonify(blockchain.chain[-1].to_json())
+
+
+@app.route("/tr", methods=["POST"])
+def route_wallet_transact():
+    transaction_data = request.get_json()
+    print(f"transaction_data: {transaction_data}")
+
+    transaction = transaction_pool.transaction_already_exist(wallet.address)
+    if transaction:
+        transaction.update(
+            wallet, transaction_data["recipient"], transaction_data["amount"]
+        )
+
+    else:
+        transaction = Transaction(
+            wallet, transaction_data["recipient"], transaction_data["amount"]
+        )
+
+    pubsub.broadcast_transaction(transaction)
+    return jsonify(transaction.to_json())
 
 
 # to run muliple instances of app we use env variables
