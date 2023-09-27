@@ -1,5 +1,7 @@
+from backend.blockchain.blockchain import Blockchain
 from backend.wallet.transaction import Transaction
 from backend.wallet.wallet import Wallet
+from backend.wallet.transaction_pool import TransactionPool
 import pytest
 
 
@@ -56,3 +58,20 @@ def test_bad_validation_transaction():
 
     with pytest.raises(Exception, match="Invalid transaction output values"):
         Transaction.validate_transaction(tr)
+
+
+def test_clear_blockchain_transactions():
+    transaction_pool = TransactionPool()
+
+    transaction1 = Transaction(Wallet(), "recipient", 1)
+    transaction2 = Transaction(Wallet(), "recipient", 2)
+
+    transaction_pool.set_transaction(transaction1)
+    transaction_pool.set_transaction(transaction2)
+
+    blockchain = Blockchain()
+    blockchain.add_block(transaction1.to_json())
+    blockchain.add_block(transaction2.to_json())
+
+    assert transaction1.id in transaction_pool.transaction_map
+    assert transaction2.id in transaction_pool.transaction_map

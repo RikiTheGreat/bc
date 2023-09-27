@@ -29,11 +29,14 @@ def route_blockchain():
 
 @app.route("/blockchain/mine")
 def route_mine():
-    transaction_data = "test_web"
+    transaction_data = transaction_pool.transaction_data()
+    print(f"\n\ntransaction_data: {transaction_data}")
     blockchain.add_block(transaction_data)
 
     block = blockchain.chain[-1]
     pubsub.broadcast_block(block)
+    transaction_pool.clear_blockchain_transactions(blockchain)
+
     return jsonify(blockchain.chain[-1].to_json())
 
 
