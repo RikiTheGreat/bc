@@ -11,7 +11,7 @@ from backend.wallet.transaction_pool import TransactionPool
 app = Flask(__name__)
 
 blockchain = Blockchain()
-wallet = Wallet()
+wallet = Wallet(blockchain)
 transaction = Transaction(wallet, "recipient", 100)
 transaction_pool = TransactionPool()
 pubsub = PubSub(blockchain, transaction, transaction_pool)
@@ -30,6 +30,8 @@ def route_blockchain():
 @app.route("/blockchain/mine")
 def route_mine():
     transaction_data = transaction_pool.transaction_data()
+    transaction_data.append(Transaction.reward_transaction(wallet).to_json())
+
     print(f"\n\ntransaction_data: {transaction_data}")
     blockchain.add_block(transaction_data)
 
@@ -58,6 +60,11 @@ def route_wallet_transact():
 
     pubsub.broadcast_transaction(transaction)
     return jsonify(transaction.to_json())
+
+
+@app.route("/wallet/info")
+def route_wallet_info():
+    return jsonify({"addrss": wallet.address, "balance:": wallet.balance})
 
 
 # to run muliple instances of app we use env variables

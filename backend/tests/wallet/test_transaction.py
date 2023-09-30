@@ -3,6 +3,7 @@ from backend.wallet.transaction import Transaction
 from backend.wallet.wallet import Wallet
 from backend.wallet.transaction_pool import TransactionPool
 import pytest
+from backend.config import MINING_REWARD, MINING_REWARD_INPUT
 
 
 def test_transaction():
@@ -75,3 +76,16 @@ def test_clear_blockchain_transactions():
 
     assert transaction1.id in transaction_pool.transaction_map
     assert transaction2.id in transaction_pool.transaction_map
+
+
+def test_reward_transaction():
+    miner_wallet = Wallet()
+    transaction = Transaction.reward_transaction(miner_wallet)
+
+    assert transaction.input == MINING_REWARD_INPUT
+    assert transaction.output[miner_wallet.address] == MINING_REWARD
+
+
+def test_valid_reward_transaction():
+    reward_transaction = Transaction.reward_transaction(Wallet())
+    Transaction.validate_transaction(reward_transaction)

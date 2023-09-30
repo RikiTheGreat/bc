@@ -1,4 +1,7 @@
+from flask import json
 from backend.blockchain.blockchain import Blockchain
+from backend.wallet.wallet import Wallet
+from backend.wallet.transaction import Transaction
 from backend.blockchain.block import GENESIS_DATA
 
 import pytest
@@ -23,9 +26,8 @@ def test_is_valid_chain():
 @pytest.fixture
 def blockchain_with_three_block():
     blockchain = Blockchain()
-    blockchain.add_block("block2")
-    blockchain.add_block("block3")
-    blockchain.add_block("block4")
+    for i in range(3):
+        blockchain.add_block([Transaction(Wallet(), "recipient", i).to_json()])
     return blockchain
 
 
@@ -41,3 +43,7 @@ def test_replace_with_lower_chain(blockchain_with_three_block):
 
     with pytest.raises(Exception, match="can't replace. chain must be longer!"):
         blockchain_with_three_block.replace_chain(blockchain1.chain)
+
+
+def test_transaction_chain(blockchain_with_three_block):
+    Blockchain.is_valid_transaction_chain(blockchain_with_three_block.chain)

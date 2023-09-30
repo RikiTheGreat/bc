@@ -7,3 +7,6 @@ SECONDS = 1000 * MILLISCONDS
 MINE_RATE = 2 * SECONDS
 
 DEFAULT_BALANCE = 1000
+
+MINING_REWARD = 50
+MINING_REWARD_INPUT = {"address": "*--officical_mining_reward--*"}
